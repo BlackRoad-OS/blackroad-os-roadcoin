@@ -561,6 +561,34 @@
             letter-spacing: 0.5px;
         }
 
+        /* Stripe CTA button */
+        .btn-stripe {
+            display: inline-block;
+            padding: var(--space-sm) var(--space-lg);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--hot-pink), var(--violet));
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            margin-top: var(--space-sm);
+        }
+
+        .btn-stripe:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 29, 108, 0.35);
+        }
+
+        .btn-stripe:active {
+            transform: translateY(0);
+        }
+
         /* Payment summary bar */
         .payment-summary {
             display: flex;
@@ -704,6 +732,7 @@
                 <a href="#mining">Mining</a>
                 <a href="#reserve">Reserve</a>
                 <a href="#payments">Payments</a>
+                <a href="#get-access">Get Access</a>
                 <div class="live-indicator">
                     <div class="live-dot"></div>
                     Live
@@ -1125,6 +1154,53 @@
         </p>
     </section>
 
+    <!-- Get Access — Stripe CTA -->
+    <section id="get-access" class="container content-section" style="text-align:center;">
+        <div class="section-header">
+            <h2>Get <span class="gradient-text">Access</span></h2>
+            <p>Purchase ROAD infrastructure access — processed securely via Stripe</p>
+        </div>
+
+        <div class="card-grid" style="max-width:900px;margin:0 auto var(--space-xl);">
+            <div class="card" style="text-align:left;">
+                <div class="card-header">
+                    <div class="card-icon">API</div>
+                    <div class="card-badge badge-green">Active</div>
+                </div>
+                <h3>API Access — Starter</h3>
+                <p>0.001 ROAD / API call</p>
+                <div style="font-size:28px;font-weight:800;color:var(--amber);margin:var(--space-md) 0;">$0.01 / call</div>
+                <button class="btn-stripe" data-price="price_api_per_call" aria-label="Buy API Access">Buy Now</button>
+            </div>
+
+            <div class="card" style="text-align:left;">
+                <div class="card-header">
+                    <div class="card-icon">ID</div>
+                    <div class="card-badge badge-green">Active</div>
+                </div>
+                <h3>Agent Identity</h3>
+                <p>1 ROAD · sovereign SHA-2048 identity</p>
+                <div style="font-size:28px;font-weight:800;color:var(--amber);margin:var(--space-md) 0;">$10</div>
+                <button class="btn-stripe" data-price="price_identity" aria-label="Buy Agent Identity for $10">Buy Now</button>
+            </div>
+
+            <div class="card" style="text-align:left;">
+                <div class="card-header">
+                    <div class="card-icon">OS</div>
+                    <div class="card-badge badge-green">Active</div>
+                </div>
+                <h3>OS License — Annual</h3>
+                <p>100 ROAD · full BlackRoad OS platform</p>
+                <div style="font-size:28px;font-weight:800;color:var(--amber);margin:var(--space-md) 0;">$1,000 / yr</div>
+                <button class="btn-stripe" data-price="price_os_annual" aria-label="Buy OS License for $1,000/yr">Buy Now</button>
+            </div>
+        </div>
+
+        <p style="color:rgba(255,255,255,0.3);font-size:12px;margin-top:var(--space-md);">
+            Payments processed by Stripe · TLS encrypted · No card data stored on our servers
+        </p>
+    </section>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -1172,6 +1248,43 @@
                 }
             });
         });
+    </script>
+    <script>
+        // Stripe Checkout — redirect to hosted payment page
+        (function () {
+            var STRIPE_PK = (typeof STRIPE_PUBLISHABLE_KEY !== 'undefined' && STRIPE_PUBLISHABLE_KEY)
+                || document.documentElement.dataset.stripePk
+                || '';
+
+            document.querySelectorAll('.btn-stripe').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var priceId = btn.getAttribute('data-price');
+                    if (!priceId) return;
+
+                    btn.disabled = true;
+                    btn.textContent = 'Redirecting…';
+
+                    fetch('/api/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ priceId: priceId, quantity: 1 }),
+                    })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (data && data.url) {
+                                window.location.href = data.url;
+                            } else {
+                                throw new Error(data.error || 'Checkout unavailable');
+                            }
+                        })
+                        .catch(function (err) {
+                            btn.disabled = false;
+                            btn.textContent = 'Buy Now';
+                            alert('Checkout error: ' + err.message);
+                        });
+                });
+            });
+        })();
     </script>
 </body>
 </html>

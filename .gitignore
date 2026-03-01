@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — NEVER commit real .env
+.env
+.env.local
+.env.*.local
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+
+# Wrangler
+.wrangler/
+
+# Editor
+.DS_Store
+.vscode/
+*.swp
